@@ -1,0 +1,21 @@
+{
+  "name": "26",
+  "version": "1.0.0",
+  "description": "IMAP mail inbox for QQ and 163 with merged inbox and spam folders",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.5.2",
+    "imapflow": "^1.3.3",
+    "mailparser": "^3.9.8",
+    "sanitize-html": "^2.17.4"
+  }
+}
