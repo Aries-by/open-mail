@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light" data-route="login">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Open Mail</title>
+    <script>
+      document.documentElement.dataset.route = location.pathname === '/mail' || location.pathname === '/mail/read' ? 'mail' : 'login';
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <section id="login-view" class="view">
+        <div class="login-wrap">
+          <div class="login-card surface-card">
+            <div class="login-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 6.75A1.75 1.75 0 0 1 4.75 5h14.5A1.75 1.75 0 0 1 21 6.75v10.5A1.75 1.75 0 0 1 19.25 19H4.75A1.75 1.75 0 0 1 3 17.25V6.75Z"></path>
+                <path d="m4 7 8 6 8-6"></path>
+              </svg>
+            </div>
+
+            <div class="login-head">
+              <div class="eyebrow">IMAP Mail Service</div>
+              <h1>登录</h1>
+              <p>通过 IMAP 协议连接邮箱，登录后进入统一收件页。</p>
+            </div>
+
+            <form id="login-form" class="form-stack">
+              <label class="field">
+                <span>IMAP 服务器</span>
+                <input id="host" name="host" type="text" placeholder="imap.qq.com" required />
+              </label>
+
+              <div id="provider-chips" class="provider-chips"></div>
+
+              <label class="field">
+                <span>端口</span>
+                <input id="port" name="port" type="number" min="1" max="65535" value="993" required />
+              </label>
+
+              <label class="field">
+                <span>邮箱地址</span>
+                <input id="email" name="email" type="email" placeholder="you@example.com" autocomplete="username" required />
+              </label>
+
+              <label class="field">
+                <span>密码 / 授权码</span>
+                <input id="password" name="password" type="password" placeholder="请输入邮箱授权码" autocomplete="current-password" required />
+              </label>
+
+              <div class="login-options">
+                <label class="check-row">
+                  <input id="remember" name="remember" type="checkbox" />
+                  <span>记住账号</span>
+                </label>
+
+                <label class="check-row">
+                  <input id="secure" name="secure" type="checkbox" checked />
+                  <span>使用 SSL/TLS</span>
+                </label>
+              </div>
+
+              <button class="primary-btn" id="login-submit" type="submit">登录</button>
+            </form>
+
+            <p id="login-status" class="footnote">请使用邮箱授权码，而不是网页登录密码。</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="workspace-view" class="view">
+        <div class="mail-app">
+          <header class="topbar">
+            <div class="topbar-brand">
+              <div class="brand-mark">M</div>
+              <div>
+                <div class="brand-title">Open Mail</div>
+                <div id="workspace-status" class="brand-subtitle">登录后可查看最新邮件。</div>
+              </div>
+            </div>
+
+            <div class="topbar-search">
+              <input id="search-input" type="text" placeholder="搜索主题、发件人、文件夹" />
+            </div>
+
+            <div class="topbar-actions">
+              <button id="refresh-btn" class="icon-btn" type="button" title="刷新">↻</button>
+              <button id="logout-btn" class="text-btn" type="button">退出登录</button>
+            </div>
+          </header>
+
+          <div class="mail-layout">
+            <aside class="left-nav surface-card">
+              <button class="compose-btn" type="button">统一收件</button>
+
+              <div class="nav-group">
+                <button class="nav-item nav-item-active" type="button">
+                  <span>收件箱</span>
+                  <strong id="total-count">0</strong>
+                </button>
+                <div class="mail-dot-legend" aria-label="邮件标记说明">
+                  <div class="legend-item">
+                    <span class="legend-dot legend-dot-normal"></span>
+                    <span>普通邮件</span>
+                  </div>
+                  <div class="legend-item">
+                    <span class="legend-dot legend-dot-spam"></span>
+                    <span>垃圾邮件</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="account-panel subtle-panel">
+                <div class="account-title">当前账号</div>
+                <div class="account-status-row">
+                  <span id="account-status-dot" class="account-status-dot account-status-offline"></span>
+                  <div id="account-email" class="account-email">未登录</div>
+                </div>
+                <div id="account-provider" class="account-provider">-</div>
+                <div class="account-inline">
+                  <span id="account-host">imap.qq.com</span>
+                  <span id="account-port">993 / SSL</span>
+                </div>
+                <div class="account-inline translate-latency-row">
+                  <span>微软翻译</span>
+                  <strong id="translate-latency">-- ms</strong>
+                </div>
+              </div>
+
+              <div class="sidebar-form subtle-panel">
+                <div class="page-size-panel">
+                  <div class="page-size-label">每页数量</div>
+                  <div id="page-size" class="page-size-options" role="group" aria-label="每页数量">
+                    <button class="page-size-option" type="button" data-size="10">10</button>
+                    <button class="page-size-option page-size-option-active" type="button" data-size="20">20</button>
+                    <button class="page-size-option" type="button" data-size="30">30</button>
+                    <button class="page-size-option" type="button" data-size="50">50</button>
+                  </div>
+                </div>
+
+                <div class="page-inline">
+                  <span>页码</span>
+                  <strong id="page-indicator">1 / 1</strong>
+                </div>
+              </div>
+            </aside>
+
+            <main class="mail-main surface-card">
+              <div id="list-view" class="content-view content-view-active">
+                <div class="list-toolbar">
+                  <div>
+                    <div class="toolbar-title">收件箱</div>
+                    <div class="toolbar-subtitle">收件箱和垃圾箱按时间合并显示。Shift 点选范围，↑/↓ 移动，空格勾选，Delete 删除。</div>
+                  </div>
+                  <div class="toolbar-actions">
+                    <button id="delete-selected" class="danger-btn" type="button" disabled>删除选中</button>
+                  </div>
+                </div>
+
+                <div id="list-alert" class="list-alert" hidden></div>
+
+                <div class="message-head-row">
+                  <label class="message-check-all">
+                    <input id="select-all" type="checkbox" />
+                  </label>
+                  <span>发件人</span>
+                  <span>主题与摘要</span>
+                  <span>日期</span>
+                </div>
+
+                <div id="message-list" class="message-table empty-state">登录后开始载入邮件。</div>
+
+                <div class="message-footer-row">
+                  <span id="page-summary">第 0 - 0 封，共 0 封</span>
+                  <div class="pagination-controls">
+                    <button id="prev-page" class="icon-btn" type="button" title="上一页">‹</button>
+                    <span id="page-indicator-main">第 1 / 1 页</span>
+                    <input id="jump-page-input" class="jump-page-input" type="number" min="1" value="1" />
+                    <button id="jump-page-btn" class="text-btn" type="button">跳转</button>
+                    <button id="next-page" class="icon-btn" type="button" title="下一页">›</button>
+                  </div>
+                </div>
+              </div>
+
+              <div id="detail-view" class="content-view">
+                <div class="detail-toolbar">
+                  <div class="detail-toolbar-left">
+                    <button id="back-to-list" class="icon-btn back-btn" type="button" title="返回列表">‹</button>
+                    <div>
+                      <div id="detail-subject" class="detail-subject">选择一封邮件查看正文</div>
+                      <div id="detail-folder" class="detail-folder">-</div>
+                    </div>
+                  </div>
+                  <div class="detail-toolbar-right">
+                    <button id="delete-message" class="danger-btn" type="button">删除邮件</button>
+                    <span id="detail-date" class="detail-date">-</span>
+                  </div>
+                </div>
+
+                <div id="detail-meta" class="detail-meta empty-meta">这里会显示发件人、收件人、时间、附件信息。</div>
+                <div id="translation-bar" class="translation-bar" hidden>
+                  <div class="translation-copy">
+                    <strong>翻译</strong>
+                    <span id="translation-status">检测语言中...</span>
+                  </div>
+                  <div class="translation-actions">
+                    <button id="translate-message" class="text-btn" type="button">翻译成简体中文</button>
+                    <button id="show-original" class="text-btn" type="button">查看原文</button>
+                    <button id="show-translated" class="text-btn" type="button">查看译文</button>
+                  </div>
+                </div>
+                <div id="detail-body" class="detail-body empty-state detail-empty">从左侧列表点击一封邮件，这里会进入邮件阅读页。</div>
+              </div>
+            </main>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <template id="message-template">
+      <button class="message-row" type="button">
+        <label class="message-row-check" aria-label="选择邮件">
+          <input class="message-checkbox" type="checkbox" />
+        </label>
+        <div class="message-row-sender"></div>
+        <div class="message-row-middle">
+          <div class="message-row-summary">
+            <span class="message-row-mail-dot"></span>
+            <span class="message-row-subject"></span>
+            <span class="message-row-preview"></span>
+          </div>
+        </div>
+        <div class="message-row-date"></div>
+      </button>
+    </template>
+
+    <script src="/app.js?v=20260528-full-translate"></script>
+  </body>
+  </html>
